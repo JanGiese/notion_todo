@@ -1,0 +1,12 @@
+{
+  "domain": "notion_todo",
+  "name": "Notion ToDo",
+  "codeowners": [
+    "@JanGiese"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/JanGiese/notion_todo",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/JanGiese/notion_todo/issues",
+  "version": "0.0.0"
+}

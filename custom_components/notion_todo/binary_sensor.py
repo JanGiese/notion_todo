@@ -1,4 +1,5 @@
-"""Binary sensor platform for integration_blueprint."""
+"""Binary sensor platform for notion_todo."""
+"""
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import (
@@ -8,13 +9,13 @@ from homeassistant.components.binary_sensor import (
 )
 
 from .const import DOMAIN
-from .coordinator import BlueprintDataUpdateCoordinator
+from .coordinator import NotionDataUpdateCoordinator
 from .entity import IntegrationBlueprintEntity
 
 ENTITY_DESCRIPTIONS = (
     BinarySensorEntityDescription(
-        key="integration_blueprint",
-        name="Integration Blueprint Binary Sensor",
+        key="notion_todo",
+        name="Notion ToDo Binary Sensor",
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
     ),
 )
@@ -24,7 +25,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     """Set up the binary_sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_devices(
-        IntegrationBlueprintBinarySensor(
+        NotionDataUpdateCoordinator(
             coordinator=coordinator,
             entity_description=entity_description,
         )
@@ -33,11 +34,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 class IntegrationBlueprintBinarySensor(IntegrationBlueprintEntity, BinarySensorEntity):
-    """integration_blueprint binary_sensor class."""
+    """notion_todo binary_sensor class."""
 
     def __init__(
         self,
-        coordinator: BlueprintDataUpdateCoordinator,
+        coordinator: NotionDataUpdateCoordinator,
         entity_description: BinarySensorEntityDescription,
     ) -> None:
         """Initialize the binary_sensor class."""
@@ -48,3 +49,4 @@ class IntegrationBlueprintBinarySensor(IntegrationBlueprintEntity, BinarySensorE
     def is_on(self) -> bool:
         """Return true if the binary_sensor is on."""
         return self.coordinator.data.get("title", "") == "foo"
+"""
