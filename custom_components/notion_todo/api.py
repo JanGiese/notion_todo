@@ -29,6 +29,7 @@ class NotionApiClientAuthenticationError(
 
 class NotionApiClient:
     """Sample API Client."""
+
     _headers = {
         'Authorization': 'Bearer <TOKEN>',
         'Content-Type': 'application/json',
