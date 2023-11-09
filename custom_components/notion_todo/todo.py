@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN
 from .coordinator import NotionDataUpdateCoordinator
 
 
@@ -23,12 +23,21 @@ async def async_setup_entry(
 ) -> None:
     """Set up the todo platform config entry."""
     coordinator: NotionDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    LOGGER.error("Hello World")
-    users = ['Jan']
+    entities = ['Notion']
     async_add_entities(
-        NotionTodoListEntity(coordinator, user)
-        for user in users
+        NotionTodoListEntity(coordinator, e)
+        for e in entities
     )
+
+# TODO use internal status for In Progress
+NOTION_TO_HASS_STATUS = {
+    'Not started': TodoItemStatus.NEEDS_ACTION,
+    'Done': TodoItemStatus.COMPLETED
+}
+HASS_TO_NOTION_STATUS = {
+    TodoItemStatus.NEEDS_ACTION: 'Not started',
+    TodoItemStatus.COMPLETED: 'Done'
+}
 
 class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoListEntity):
     """A Notion TodoListEntity."""
@@ -57,20 +66,14 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
             self._attr_todo_items = None
         else:
             items = []
-            for task in self.dummy_tasks:#self.coordinator.data:
-                """
-                if task.project_id != self._project_id:
-                    continue
-                if task.is_completed:
-                    status = TodoItemStatus.COMPLETED
-                else:
-                    status = TodoItemStatus.NEEDS_ACTION
-                    """
+            for task in self.coordinator.data['results']:
+                status = NOTION_TO_HASS_STATUS[task['properties']['Status']['status']['name']]
+
                 items.append(
                     TodoItem(
-                        summary=task['summary'],#task.content,
-                        uid=task['summary'],#task.id,
-                        status=task['status'],
+                        summary=task['properties']['Name']['title'][0]['plain_text'],
+                        uid=task['id'],
+                        status=status,
                     )
                 )
             self._attr_todo_items = items
@@ -78,36 +81,46 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
         """Create a To-do item."""
-        """
-        if item.status != TodoItemStatus.NEEDS_ACTION:
-            raise ValueError("Only active tasks may be created.")
-        await self.coordinator.api.add_task(
-            content=item.summary or "",
-            project_id=self._project_id,
-        )"""
-        self.dummy_tasks.append({'summary': item.summary or "", 'status': TodoItemStatus.NEEDS_ACTION})
+        await self.coordinator.client.create_task(item.summary, status=HASS_TO_NOTION_STATUS[item.status])
         await self.coordinator.async_refresh()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a To-do item."""
         uid: str = cast(str, item.uid)
-        """if item.summary:
-            await self.coordinator.api.update_task(task_id=uid, content=item.summary)
+        update_properties={}
+        if item.summary:
+            update_properties['Name'] = {
+            "title": [
+                {
+                    "text": {
+                        "content": item.summary
+                    }
+                }
+            ]
+        }
         if item.status is not None:
             if item.status == TodoItemStatus.COMPLETED:
-                await self.coordinator.api.close_task(task_id=uid)
+                update_properties['Status'] = {
+                    'status': {
+                        'name': "Done"
+                    }
+                }
             else:
-                await self.coordinator.api.reopen_task(task_id=uid)"""
-        #for i in self.dummy_items:
-        #    if i.summary == item.summary:
+                update_properties['Status'] = {
+                    'status': {
+                        'name': "Not started"
+                    }
+                }
+        if update_properties != {}:
+            await self.coordinator.client.update_task(task_id=uid, update_properties=update_properties)
 
         await self.coordinator.async_refresh()
 
     async def async_delete_todo_items(self, uids: list[str]) -> None:
         """Delete a To-do item."""
-        """await asyncio.gather(
-            *[self.coordinator.api.delete_task(task_id=uid) for uid in uids]
-        )"""
+        await asyncio.gather(
+            *[self.coordinator.client.delete_task(task_id=uid) for uid in uids]
+        )
         await self.coordinator.async_refresh()
 
     async def async_added_to_hass(self) -> None:

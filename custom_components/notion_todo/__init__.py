@@ -1,17 +1,12 @@
-"""Custom integration to integrate notion_todo with Home Assistant.
-
-For more details about this integration, please refer to
-https://github.com/ludeeus/notion_todo
-"""
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.const import CONF_ACCESS_TOKEN, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import NotionApiClient
-from .const import DOMAIN
+from .const import DOMAIN, CONF_DATABASE_ID, CONF_TASK_OWNER
 from .coordinator import NotionDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -19,19 +14,18 @@ PLATFORMS: list[Platform] = [
 ]
 
 
-# https://developers.home-assistant.io/docs/config_entries_index/#setting-up-an-entry
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = coordinator = NotionDataUpdateCoordinator(
         hass=hass,
         client=NotionApiClient(
-            username=entry.data[CONF_USERNAME],
-            password=entry.data[CONF_PASSWORD],
+            token=entry.data[CONF_ACCESS_TOKEN],
+            database_id=entry.data[CONF_DATABASE_ID],
+            task_owner=CONF_TASK_OWNER,
             session=async_get_clientsession(hass),
         ),
     )
-    # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
     await coordinator.async_config_entry_first_refresh()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

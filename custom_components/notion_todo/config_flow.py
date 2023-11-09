@@ -1,9 +1,9 @@
-"""Adds config flow for Blueprint."""
+"""Adds config flow for Notion ToDo."""
 from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_ACCESS_TOKEN
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
@@ -13,11 +13,11 @@ from .api import (
     NotionApiClientCommunicationError,
     NotionApiClientError,
 )
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, CONF_DATABASE_ID, CONF_TASK_OWNER
 
 
-class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Config flow for Blueprint."""
+class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    """Config flow for Notion ToDo."""
 
     VERSION = 1
 
@@ -29,9 +29,10 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             try:
+
                 await self._test_credentials(
-                    username=user_input[CONF_USERNAME],
-                    password=user_input[CONF_PASSWORD],
+                    token=user_input[CONF_ACCESS_TOKEN],
+                    database_id=user_input[CONF_DATABASE_ID]
                 )
             except NotionApiClientAuthenticationError as exception:
                 LOGGER.warning(exception)
@@ -44,7 +45,7 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 _errors["base"] = "unknown"
             else:
                 return self.async_create_entry(
-                    title=user_input[CONF_USERNAME],
+                    title=user_input[CONF_DATABASE_ID],
                     data=user_input,
                 )
 
@@ -53,14 +54,22 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(
-                        CONF_USERNAME,
-                        default=(user_input or {}).get(CONF_USERNAME),
+                        CONF_DATABASE_ID,
+                        default=(user_input or {}).get(CONF_DATABASE_ID),
                     ): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.TEXT
                         ),
                     ),
-                    vol.Required(CONF_PASSWORD): selector.TextSelector(
+                    vol.Required(
+                        CONF_TASK_OWNER,
+                        default=(user_input or {}).get(CONF_TASK_OWNER),
+                    ): selector.TextSelector(
+                        selector.TextSelectorConfig(
+                            type=selector.TextSelectorType.TEXT
+                        ),
+                    ),
+                    vol.Required(CONF_ACCESS_TOKEN): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.PASSWORD
                         ),
@@ -70,11 +79,12 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=_errors,
         )
 
-    async def _test_credentials(self, username: str, password: str) -> None:
+    async def _test_credentials(self, token: str, database_id: str) -> None:
         """Validate credentials."""
         client = NotionApiClient(
-            username=username,
-            password=password,
+            token=token,
+            database_id=database_id,
+            task_owner=None,
             session=async_create_clientsession(self.hass),
         )
         await client.async_get_data()
