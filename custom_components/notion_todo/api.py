@@ -1,4 +1,4 @@
-"""Sample API Client."""
+"""Notion API Client."""
 from __future__ import annotations
 
 import asyncio
@@ -7,7 +7,7 @@ import socket
 import aiohttp
 import async_timeout
 
-from .const import NOTION_URL
+from .const import NOTION_URL, NOTION_VERSION
 from .task_template import TASK_TEMPLATE
 from .notion_query import QUERY
 
@@ -28,13 +28,14 @@ class NotionApiClientAuthenticationError(
 
 
 class NotionApiClient:
-    """Sample API Client."""
+    """Notion API Client."""
 
     _headers = {
         'Authorization': 'Bearer <TOKEN>',
         'Content-Type': 'application/json',
-        'Notion-Version': '2022-02-22'
+        'Notion-Version': NOTION_VERSION
         }
+
     def __init__(
         self,
         token: str,
@@ -42,6 +43,14 @@ class NotionApiClient:
         task_owner: str,
         session: aiohttp.ClientSession
     ) -> None:
+        """Notion API Client.
+
+        Args:
+            token (str): Notion token with access to ToDo database
+            database_id (str): id of the ToDo database
+            task_owner (str): Task owner to be assigned to new tasks
+            session (aiohttp.ClientSession): the session
+        """
         self._token = token
         self._session = session
         self._headers['Authorization'] = f'Bearer {token}'
@@ -63,6 +72,12 @@ class NotionApiClient:
         task_id: str,
         update_properties: dict
     ) -> any:
+        """Update task in Notion.
+
+        Args:
+            task_id (str): id of the task
+            update_properties (dict): properties to be updated
+        """
         return await self._api_wrapper(
             method="patch",
             url=f"{NOTION_URL}/pages/{task_id}",
@@ -71,6 +86,12 @@ class NotionApiClient:
         )
 
     async def create_task(self, title: str, status: str) -> any:
+        """Create a new task in Notion.
+
+        Args:
+            title (str): Title of the task
+            status (str): Status of the task
+        """
         task_data=TASK_TEMPLATE.copy()
         task_data['properties']['Name']['title'][0]['text']['content'] = title
         task_data['properties']['Status']['status']['name'] = status
@@ -82,6 +103,14 @@ class NotionApiClient:
 
     async def delete_task(self,
                           task_id: str):
+        """Delete a task in Notion.
+
+        Args:
+            task_id (str): id of the task
+
+        Returns:
+            _type_: _description_
+        """
         return await self._api_wrapper(
             method="delete",
             url=f"{NOTION_URL}/blocks/{task_id}",
