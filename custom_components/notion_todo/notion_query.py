@@ -1,3 +1,4 @@
+"""The query to search for tasks in Notion."""
 QUERY={
     "filter": {
         "or": [

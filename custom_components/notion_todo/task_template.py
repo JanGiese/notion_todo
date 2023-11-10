@@ -1,3 +1,4 @@
+"""Template for new tasks in Notion."""
 TASK_TEMPLATE={
     "parent": {
         "database_id": "0b70c81f5c1d4dd8aa07dd1b59019a80"
