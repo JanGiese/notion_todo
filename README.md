@@ -5,9 +5,7 @@
 [![License][license-shield]](LICENSE)
 
 ![Project Maintenance][maintenance-shield]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
-[![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
 _Integration to integrate with [integration_blueprint][integration_blueprint]._
@@ -38,15 +36,14 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 
 ***
 
-[integration_blueprint]: https://github.com/ludeeus/integration_blueprint
-[commits-shield]: https://img.shields.io/github/commit-activity/y/ludeeus/integration_blueprint.svg?style=for-the-badge
-[commits]: https://github.com/ludeeus/integration_blueprint/commits/main
-[discord]: https://discord.gg/Qa5fW2R
+[integration_blueprint]: https://github.com/JanGiese/notion_todo
+[commits-shield]: https://img.shields.io/github/commit-activity/y/JanGiese/notion_todo.svg?style=for-the-badge
+[commits]: https://github.com/JanGiese/notion_todo/commits/main
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
 [exampleimg]: example.png
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
-[license-shield]: https://img.shields.io/github/license/ludeeus/integration_blueprint.svg?style=for-the-badge
-[maintenance-shield]: https://img.shields.io/badge/maintainer-Joakim%20Sørensen%20%40ludeeus-blue.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/ludeeus/integration_blueprint.svg?style=for-the-badge
-[releases]: https://github.com/ludeeus/integration_blueprint/releases
+[license-shield]: https://img.shields.io/github/license/JanGiese/notion_todo.svg?style=for-the-badge
+[maintenance-shield]: https://img.shields.io/badge/maintainer-JanGiese-blue.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/JanGiese/notion_todo.svg?style=for-the-badge
+[releases]: https://github.com/JanGiese/notion_todo/releases
