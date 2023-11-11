@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import NotionApiClient
-from .const import DOMAIN, CONF_DATABASE_ID, CONF_TASK_OWNER
+from .const import DOMAIN, CONF_DATABASE_ID
 from .coordinator import NotionDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -25,7 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = coordinator = NotionDataUpdateCoordinator(
         hass=hass,
         client=NotionApiClient(token=entry.data[CONF_ACCESS_TOKEN], database_id=entry.data[CONF_DATABASE_ID],
-                               session=async_get_clientsession(hass), task_owner=CONF_TASK_OWNER),
+                               session=async_get_clientsession(hass)),
     )
     await coordinator.async_config_entry_first_refresh()
 

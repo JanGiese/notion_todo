@@ -41,8 +41,7 @@ class NotionApiClient:
         self,
         token: str,
         database_id: str,
-        session: aiohttp.ClientSession,
-        task_owner: str = None
+        session: aiohttp.ClientSession
     ) -> None:
         """Notion API Client.
 
@@ -56,24 +55,15 @@ class NotionApiClient:
         self._session = session
         self._headers['Authorization'] = f'Bearer {token}'
         self._database_id = database_id
-        self._task_owner = task_owner
         self._task_template = None
 
     async def async_get_data(self) -> any:
         """Get data from the API."""
-        if self._task_owner:
-            return await self._api_wrapper(
-                method="post",
-                url=f"{NOTION_URL}/databases/{self._database_id}/query",
-                headers=self._headers,
-                data=QUERY
-            )
-        else:
-            return await self._api_wrapper(
-                method="post",
-                url=f"{NOTION_URL}/databases/{self._database_id}/query",
-                headers=self._headers
-            )
+        return await self._api_wrapper(
+            method="post",
+            url=f"{NOTION_URL}/databases/{self._database_id}/query",
+            headers=self._headers
+        )
 
     async def update_task(
         self,

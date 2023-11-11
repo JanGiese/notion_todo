@@ -13,7 +13,7 @@ from .api import (
     NotionApiClientCommunicationError,
     NotionApiClientError,
 )
-from .const import DOMAIN, LOGGER, CONF_DATABASE_ID, CONF_TASK_OWNER
+from .const import DOMAIN, LOGGER, CONF_DATABASE_ID
 
 
 class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -56,14 +56,6 @@ class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_DATABASE_ID,
                         default=(user_input or {}).get(CONF_DATABASE_ID),
-                    ): selector.TextSelector(
-                        selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.TEXT
-                        ),
-                    ),
-                    vol.Required(
-                        CONF_TASK_OWNER,
-                        default=(user_input or {}).get(CONF_TASK_OWNER),
                     ): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.TEXT
