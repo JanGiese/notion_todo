@@ -12,7 +12,10 @@ class NotionPropertyHelper:
     @staticmethod
     def get_property_by_id(id, data):
         """Get property by id."""
-        return data[NotionPropertyHelper._get_property_key_by_id(id)]
+        print(id)
+        print(data)
+        key = NotionPropertyHelper._get_property_key_by_id(id, data)
+        return NotionPropertyHelper._property(data['properties'][key])
 
     @staticmethod
     def set_property_by_id(id, value, data):

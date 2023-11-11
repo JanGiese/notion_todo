@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, TASK_STATUS_PROPERTY, TASK_SUMMARY_PROPERTY
 from .coordinator import NotionDataUpdateCoordinator
-from notion_property_helper import NotionPropertyHelper as propHelper
+from .notion_property_helper import NotionPropertyHelper as propHelper
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
@@ -71,7 +71,7 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
 
                 items.append(
                     TodoItem(
-                        summary=propHelper.get_property_by_id(TASK_SUMMARY_PROPERTY, task),
+                        summary=propHelper.get_property_by_id('title', task),
                         uid=task['id'],
                         status=status,
                     )

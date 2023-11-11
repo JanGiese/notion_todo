@@ -9,7 +9,7 @@ import async_timeout
 
 from .const import NOTION_URL, NOTION_VERSION, TASK_STATUS_PROPERTY, TASK_ASSIGNEE_PROPERTY, TASK_DATE_PROPERTY, TASK_SUMMARY_PROPERTY
 from .notion_query import QUERY
-from notion_property_helper import NotionPropertyHelper as propHelper
+from .notion_property_helper import NotionPropertyHelper as propHelper
 
 
 class NotionApiClientError(Exception):
