@@ -16,6 +16,11 @@ Platform | Description
 -- | --
 `todo` | Shows all todos
 
+## Prerequisites
+- You need to have a notion account and a notion integration token. You can get one by following the instructions [here](https://developers.notion.com/docs/getting-started).
+- You need to create a database from the Notion´s official ToDo template. You can find it [here](https://www.notion.so/Notion-To-Do-List-Template-0b2e2d8980b74c5e8e8c1e6c0f8b4b4e).
+- You need to share the database with the integration token you created before.
+
 ## Installation
 
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
@@ -24,7 +29,7 @@ Platform | Description
 1. Download _all_ the files from the `custom_components/integration_blueprint/` directory (folder) in this repository.
 1. Place the files you downloaded in the new directory (folder) you created.
 1. Restart Home Assistant
-1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Integration blueprint"
+1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Notion ToDo"
 
 ## Configuration is done in the UI
 
