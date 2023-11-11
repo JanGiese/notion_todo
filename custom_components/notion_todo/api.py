@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import socket
-
+import copy
 import aiohttp
 import async_timeout
 
@@ -47,7 +47,6 @@ class NotionApiClient:
         Args:
             token (str): Notion token with access to ToDo database
             database_id (str): id of the ToDo database
-            task_owner (str): Task owner to be assigned to new tasks
             session (aiohttp.ClientSession): the session
         """
         self._token = token
@@ -77,20 +76,20 @@ class NotionApiClient:
             title: (str): Title of the task
             status (str): Status of the task
         """
-        task_template = await self._get_task_template()
-        task_data = task_template.copy()
+        task_data = await self._get_task_template()
+        print(task_data)
         task_data = propHelper.set_property_by_id("title", title, task_data)
         task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
         task_data = propHelper.del_property_by_id(TASK_ASSIGNEE_PROPERTY, task_data)
         task_data = propHelper.del_property_by_id(TASK_DATE_PROPERTY, task_data)
         task_data = propHelper.del_property_by_id(TASK_SUMMARY_PROPERTY, task_data)
         update_properties = task_data['properties']
-        return await self._api_wrapper(
-            method="patch",
-            url=f"{NOTION_URL}/pages/{task_id}",
-            headers=self._headers,
-            data={"properties": update_properties}
-        )
+        # return await self._api_wrapper(
+        #     method="patch",
+        #     url=f"{NOTION_URL}/pages/{task_id}",
+        #     headers=self._headers,
+        #     data={"properties": update_properties}
+        # )
 
     async def create_task(self, title: str, status: str) -> any:
         """Create a new task in Notion.
@@ -135,18 +134,14 @@ class NotionApiClient:
             headers=self._headers
         )
 
-    async def _init_task_template(self):
-        self._database = await self._get_database()
-        self._task_template = {
-            'parent': {'database_id': self._database_id},
-            'properties': self._database['properties']
-        }
-        return self._task_template
-
     async def _get_task_template(self):
-        if self._task_template:
-            return self._task_template
-        return await self._init_task_template()
+        if not self._task_template:
+            self._database = await self._get_database()
+            self._task_template = {
+                'parent': {'database_id': self._database_id},
+                'properties': self._database['properties']
+            }
+        return copy.deepcopy(self._task_template)
 
     async def _api_wrapper(
         self,
