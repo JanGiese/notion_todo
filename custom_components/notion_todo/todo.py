@@ -37,8 +37,8 @@ NOTION_TO_HASS_STATUS = {
     'done': TodoItemStatus.COMPLETED
 }
 HASS_TO_NOTION_STATUS = {
-    TodoItemStatus.NEEDS_ACTION: 'Not started',
-    TodoItemStatus.COMPLETED: 'Done'
+    TodoItemStatus.NEEDS_ACTION: 'not-started',
+    TodoItemStatus.COMPLETED: 'done'
 }
 
 class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoListEntity):

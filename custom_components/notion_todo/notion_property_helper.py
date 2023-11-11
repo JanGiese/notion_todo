@@ -151,4 +151,4 @@ class NotionPropertyHelper:
         if value:
             return {"type": "status", "status": {"id": value}}
         else:
-            return prop['status']['name']
+            return prop['status']['id']
