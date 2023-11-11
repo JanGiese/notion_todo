@@ -26,7 +26,8 @@ class NotionPropertyHelper:
     def del_property_by_id(id, data):
         """Delete property by id."""
         key = NotionPropertyHelper._get_property_key_by_id(id, data)
-        del data['properties'][key]
+        if key:
+            del data['properties'][key]
         return data
 
 
