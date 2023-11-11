@@ -77,19 +77,18 @@ class NotionApiClient:
             status (str): Status of the task
         """
         task_data = await self._get_task_template()
-        print(task_data)
         task_data = propHelper.set_property_by_id("title", title, task_data)
         task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
         task_data = propHelper.del_property_by_id(TASK_ASSIGNEE_PROPERTY, task_data)
         task_data = propHelper.del_property_by_id(TASK_DATE_PROPERTY, task_data)
         task_data = propHelper.del_property_by_id(TASK_SUMMARY_PROPERTY, task_data)
         update_properties = task_data['properties']
-        # return await self._api_wrapper(
-        #     method="patch",
-        #     url=f"{NOTION_URL}/pages/{task_id}",
-        #     headers=self._headers,
-        #     data={"properties": update_properties}
-        # )
+        return await self._api_wrapper(
+            method="patch",
+            url=f"{NOTION_URL}/pages/{task_id}",
+            headers=self._headers,
+            data={"properties": update_properties}
+        )
 
     async def create_task(self, title: str, status: str) -> any:
         """Create a new task in Notion.
