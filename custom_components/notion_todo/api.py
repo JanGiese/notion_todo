@@ -7,7 +7,7 @@ import copy
 import aiohttp
 import async_timeout
 
-from .const import NOTION_URL, NOTION_VERSION, TASK_STATUS_PROPERTY, TASK_ASSIGNEE_PROPERTY, TASK_DATE_PROPERTY, TASK_SUMMARY_PROPERTY
+from .const import NOTION_URL, NOTION_VERSION, TASK_STATUS_PROPERTY
 from .notion_property_helper import NotionPropertyHelper as propHelper
 
 
@@ -79,9 +79,6 @@ class NotionApiClient:
         task_data = await self._get_task_template()
         task_data = propHelper.set_property_by_id("title", title, task_data)
         task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
-        task_data = propHelper.del_property_by_id(TASK_ASSIGNEE_PROPERTY, task_data)
-        task_data = propHelper.del_property_by_id(TASK_DATE_PROPERTY, task_data)
-        task_data = propHelper.del_property_by_id(TASK_SUMMARY_PROPERTY, task_data)
         update_properties = task_data['properties']
         return await self._api_wrapper(
             method="patch",
@@ -101,9 +98,6 @@ class NotionApiClient:
         task_data = task_template.copy()
         task_data = propHelper.set_property_by_id("title", title, task_data)
         task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
-        task_data = propHelper.del_property_by_id(TASK_ASSIGNEE_PROPERTY, task_data)
-        task_data = propHelper.del_property_by_id(TASK_DATE_PROPERTY, task_data)
-        task_data = propHelper.del_property_by_id(TASK_SUMMARY_PROPERTY, task_data)
 
         return await self._api_wrapper(
             method="post",
@@ -135,10 +129,12 @@ class NotionApiClient:
 
     async def _get_task_template(self):
         if not self._task_template:
-            self._database = await self._get_database()
+            database = await self._get_database()
+            properties = database['properties']
+            propHelper.del_properties_except(["title", TASK_STATUS_PROPERTY], properties)
             self._task_template = {
                 'parent': {'database_id': self._database_id},
-                'properties': self._database['properties']
+                'properties': properties
             }
         return copy.deepcopy(self._task_template)
 

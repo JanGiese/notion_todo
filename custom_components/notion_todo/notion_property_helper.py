@@ -23,6 +23,17 @@ class NotionPropertyHelper:
         return data
 
     @staticmethod
+    def del_properties_except(ids, properties):
+        """Delete properties except param."""
+        delete_properties = []
+        for name, attr in properties.items():
+            if attr['id'] not in ids:
+                delete_properties.append(name)
+        for name in delete_properties:
+            del properties[name]
+        return properties
+
+    @staticmethod
     def del_property_by_id(id, data):
         """Delete property by id."""
         key = NotionPropertyHelper._get_property_key_by_id(id, data)
