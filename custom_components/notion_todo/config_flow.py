@@ -81,10 +81,6 @@ class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _test_credentials(self, token: str, database_id: str) -> None:
         """Validate credentials."""
-        client = NotionApiClient(
-            token=token,
-            database_id=database_id,
-            task_owner=None,
-            session=async_create_clientsession(self.hass),
-        )
+        client = NotionApiClient(token=token, database_id=database_id, session=async_create_clientsession(self.hass),
+                                 task_owner=None)
         await client.async_get_data()

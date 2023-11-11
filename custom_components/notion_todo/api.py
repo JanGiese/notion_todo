@@ -7,9 +7,10 @@ import socket
 import aiohttp
 import async_timeout
 
-from .const import NOTION_URL, NOTION_VERSION
-from .task_template import TASK_TEMPLATE
+from .const import NOTION_URL, NOTION_VERSION, TASK_STATUS_PROPERTY, TASK_ASSIGNEE_PROPERTY, TASK_DATE_PROPERTY, TASK_SUMMARY_PROPERTY
 from .notion_query import QUERY
+from notion_property_helper import NotionPropertyHelper as propHelper
+
 
 class NotionApiClientError(Exception):
     """Exception to indicate a general API error."""
@@ -40,8 +41,8 @@ class NotionApiClient:
         self,
         token: str,
         database_id: str,
-        task_owner: str,
-        session: aiohttp.ClientSession
+        session: aiohttp.ClientSession,
+        task_owner: str = None
     ) -> None:
         """Notion API Client.
 
@@ -56,28 +57,45 @@ class NotionApiClient:
         self._headers['Authorization'] = f'Bearer {token}'
         self._database_id = database_id
         self._task_owner = task_owner
-        TASK_TEMPLATE['parent']['database_id'] = database_id
+        self._task_template = None
 
     async def async_get_data(self) -> any:
         """Get data from the API."""
-        return await self._api_wrapper(
-            method="post",
-            url=f"{NOTION_URL}/databases/{self._database_id}/query",
-            headers=self._headers,
-            data=QUERY
-        )
+        if self._task_owner:
+            return await self._api_wrapper(
+                method="post",
+                url=f"{NOTION_URL}/databases/{self._database_id}/query",
+                headers=self._headers,
+                data=QUERY
+            )
+        else:
+            return await self._api_wrapper(
+                method="post",
+                url=f"{NOTION_URL}/databases/{self._database_id}/query",
+                headers=self._headers
+            )
 
     async def update_task(
         self,
         task_id: str,
-        update_properties: dict
+        title: str,
+        status: str,
     ) -> any:
         """Update task in Notion.
 
         Args:
             task_id (str): id of the task
-            update_properties (dict): properties to be updated
+            title: (str): Title of the task
+            status (str): Status of the task
         """
+        task_template = await self._get_task_template()
+        task_data = task_template.copy()
+        task_data = propHelper.set_property_by_id("title", title, task_data)
+        task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
+        task_data = propHelper.del_property_by_id(TASK_ASSIGNEE_PROPERTY, task_data)
+        task_data = propHelper.del_property_by_id(TASK_DATE_PROPERTY, task_data)
+        task_data = propHelper.del_property_by_id(TASK_SUMMARY_PROPERTY, task_data)
+        update_properties = task_data['properties']
         return await self._api_wrapper(
             method="patch",
             url=f"{NOTION_URL}/pages/{task_id}",
@@ -92,9 +110,14 @@ class NotionApiClient:
             title (str): Title of the task
             status (str): Status of the task
         """
-        task_data=TASK_TEMPLATE.copy()
-        task_data['properties']['Name']['title'][0]['text']['content'] = title
-        task_data['properties']['Status']['status']['name'] = status
+        task_template = await self._get_task_template()
+        task_data = task_template.copy()
+        task_data = propHelper.set_property_by_id("title", title, task_data)
+        task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
+        task_data = propHelper.del_property_by_id(TASK_ASSIGNEE_PROPERTY, task_data)
+        task_data = propHelper.del_property_by_id(TASK_DATE_PROPERTY, task_data)
+        task_data = propHelper.del_property_by_id(TASK_SUMMARY_PROPERTY, task_data)
+
         return await self._api_wrapper(
             method="post",
             url=f"{NOTION_URL}/pages",
@@ -115,6 +138,26 @@ class NotionApiClient:
             method="delete",
             url=f"{NOTION_URL}/blocks/{task_id}",
             headers=self._headers)
+
+    async def _get_database(self):
+        return await self._api_wrapper(
+            method="get",
+            url=f"{NOTION_URL}/databases/{self._database_id}",
+            headers=self._headers
+        )
+
+    async def _init_task_template(self):
+        self._database = await self._get_database()
+        self._task_template = {
+            'parent': {'database_id': self._database_id},
+            'properties': self._database['properties']
+        }
+        return self._task_template
+
+    async def _get_task_template(self):
+        if self._task_template:
+            return self._task_template
+        return await self._init_task_template()
 
     async def _api_wrapper(
         self,
