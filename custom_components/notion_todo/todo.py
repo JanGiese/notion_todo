@@ -32,7 +32,9 @@ async def async_setup_entry(
 # TODO use internal status for In Progress
 NOTION_TO_HASS_STATUS = {
     'not-started': TodoItemStatus.NEEDS_ACTION,
-    'Done': TodoItemStatus.COMPLETED
+    'in-progress': TodoItemStatus.NEEDS_ACTION,
+    'archived': TodoItemStatus.COMPLETED,
+    'done': TodoItemStatus.COMPLETED
 }
 HASS_TO_NOTION_STATUS = {
     TodoItemStatus.NEEDS_ACTION: 'Not started',
