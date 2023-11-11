@@ -14,9 +14,9 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, TASK_STATUS_PROPERTY
 from .coordinator import NotionDataUpdateCoordinator
-
+from .notion_property_helper import NotionPropertyHelper as propHelper
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
@@ -29,14 +29,19 @@ async def async_setup_entry(
         for e in entities
     )
 
-# TODO use internal status for In Progress
+STATUS_IN_PROGRESS = 'in-progress'
+STATUS_ARCHIVED = 'archived'
+STATUS_DONE = 'done'
+STATUS_NOT_STARTED = 'not-started'
 NOTION_TO_HASS_STATUS = {
-    'Not started': TodoItemStatus.NEEDS_ACTION,
-    'Done': TodoItemStatus.COMPLETED
+    STATUS_NOT_STARTED: TodoItemStatus.NEEDS_ACTION,
+    STATUS_IN_PROGRESS: TodoItemStatus.NEEDS_ACTION,
+    STATUS_DONE: TodoItemStatus.COMPLETED,
+    STATUS_ARCHIVED: TodoItemStatus.COMPLETED
 }
 HASS_TO_NOTION_STATUS = {
-    TodoItemStatus.NEEDS_ACTION: 'Not started',
-    TodoItemStatus.COMPLETED: 'Done'
+    TodoItemStatus.NEEDS_ACTION: STATUS_NOT_STARTED,
+    TodoItemStatus.COMPLETED: STATUS_DONE
 }
 
 class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoListEntity):
@@ -57,7 +62,7 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
         super().__init__(coordinator=coordinator)
         self._attr_unique_id = f"{user}-{user}"
         self._attr_name = user
-        self.dummy_tasks = [{'summary':'TestTask', 'status': TodoItemStatus.NEEDS_ACTION}]
+        self._status = {}
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -67,12 +72,14 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
         else:
             items = []
             for task in self.coordinator.data['results']:
-                status = NOTION_TO_HASS_STATUS[task['properties']['Status']['status']['name']]
+                id = task['id']
+                self._status[id] = propHelper.get_property_by_id(TASK_STATUS_PROPERTY, task)
+                status = NOTION_TO_HASS_STATUS[self._status[id]]
 
                 items.append(
                     TodoItem(
-                        summary=task['properties']['Name']['title'][0]['plain_text'],
-                        uid=task['id'],
+                        summary=propHelper.get_property_by_id('title', task),
+                        uid=id,
                         status=status,
                     )
                 )
@@ -87,32 +94,15 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a To-do item."""
         uid: str = cast(str, item.uid)
-        update_properties={}
-        if item.summary:
-            update_properties['Name'] = {
-            "title": [
-                {
-                    "text": {
-                        "content": item.summary
-                    }
-                }
-            ]
-        }
-        if item.status is not None:
-            if item.status == TodoItemStatus.COMPLETED:
-                update_properties['Status'] = {
-                    'status': {
-                        'name': "Done"
-                    }
-                }
-            else:
-                update_properties['Status'] = {
-                    'status': {
-                        'name': "Not started"
-                    }
-                }
-        if update_properties != {}:
-            await self.coordinator.client.update_task(task_id=uid, update_properties=update_properties)
+        status = HASS_TO_NOTION_STATUS[item.status]
+        if self._status[uid] == STATUS_IN_PROGRESS and status == STATUS_NOT_STARTED:
+            status = STATUS_IN_PROGRESS
+        if self._status[uid] == STATUS_ARCHIVED and status == STATUS_DONE:
+            status = STATUS_ARCHIVED
+
+        await self.coordinator.client.update_task(task_id=uid,
+                                                  title=item.summary,
+                                                  status=status)
 
         await self.coordinator.async_refresh()
 

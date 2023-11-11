@@ -2,10 +2,10 @@
     "config": {
         "step": {
             "user": {
-                "description": "If you need help with the configuration have a look here: https://github.com/JanGiese/notion_todo",
+                "description": "Hilfe zur Konfiguration findest du hier: https://github.com/JanGiese/notion_todo",
                 "data": {
                     "access_token": "Notion bearer token",
-                    "database_id": "Database id"
+                    "database_id": "Datenbank id"
                 }
             }
         },

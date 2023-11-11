@@ -13,7 +13,7 @@ from .api import (
     NotionApiClientCommunicationError,
     NotionApiClientError,
 )
-from .const import DOMAIN, LOGGER, CONF_DATABASE_ID, CONF_TASK_OWNER
+from .const import DOMAIN, LOGGER, CONF_DATABASE_ID
 
 
 class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -61,14 +61,6 @@ class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                             type=selector.TextSelectorType.TEXT
                         ),
                     ),
-                    vol.Required(
-                        CONF_TASK_OWNER,
-                        default=(user_input or {}).get(CONF_TASK_OWNER),
-                    ): selector.TextSelector(
-                        selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.TEXT
-                        ),
-                    ),
                     vol.Required(CONF_ACCESS_TOKEN): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.PASSWORD
@@ -81,10 +73,6 @@ class NotionTodoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _test_credentials(self, token: str, database_id: str) -> None:
         """Validate credentials."""
-        client = NotionApiClient(
-            token=token,
-            database_id=database_id,
-            task_owner=None,
-            session=async_create_clientsession(self.hass),
-        )
+        client = NotionApiClient(token=token, database_id=database_id, session=async_create_clientsession(self.hass),
+                                 task_owner=None)
         await client.async_get_data()
