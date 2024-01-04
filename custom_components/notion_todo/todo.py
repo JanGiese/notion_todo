@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, TASK_STATUS_PROPERTY
+from .const import DOMAIN, TASK_STATUS_PROPERTY, TASK_DESCRIPTION_PROPERTY, TASK_DATE_PROPERTY
 from .coordinator import NotionDataUpdateCoordinator
 from .notion_property_helper import NotionPropertyHelper as propHelper
 
@@ -51,6 +51,8 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
         TodoListEntityFeature.CREATE_TODO_ITEM
         | TodoListEntityFeature.UPDATE_TODO_ITEM
         | TodoListEntityFeature.DELETE_TODO_ITEM
+        | TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+        | TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
     )
 
     def __init__(
@@ -81,6 +83,8 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
                         summary=propHelper.get_property_by_id('title', task),
                         uid=id,
                         status=status,
+                        description=propHelper.get_property_by_id(TASK_DESCRIPTION_PROPERTY, task),
+                        due=propHelper.get_property_by_id(TASK_DATE_PROPERTY, task)
                     )
                 )
             self._attr_todo_items = items
@@ -102,7 +106,9 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
 
         await self.coordinator.client.update_task(task_id=uid,
                                                   title=item.summary,
-                                                  status=status)
+                                                  status=status,
+                                                  due=item.due,
+                                                  description=item.description)
 
         await self.coordinator.async_refresh()
 

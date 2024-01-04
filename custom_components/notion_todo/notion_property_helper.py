@@ -3,9 +3,7 @@ from datetime import datetime
 import logging
 
 DATE_FORMAT = '%Y-%m-%d'
-DATETIME_FORMAT = DATE_FORMAT + 'T%H:%M:%S.%fZ'
-
-
+DATETIME_FORMAT = DATE_FORMAT + 'T%H:%M:%S.%f%z'
 class NotionPropertyHelper:
     """Helper class to parse Notion properties."""
 
@@ -19,7 +17,8 @@ class NotionPropertyHelper:
     def set_property_by_id(id, value, data):
         """Set property by id."""
         key = NotionPropertyHelper._get_property_key_by_id(id, data)
-        data['properties'][key] = NotionPropertyHelper._property(data['properties'][key], value)
+        if key:
+            data['properties'][key] = NotionPropertyHelper._property(data['properties'][key], value)
         return data
 
     @staticmethod
@@ -54,7 +53,7 @@ class NotionPropertyHelper:
         if prop_type in ['checkbox', 'number', 'string']:
             return prop[prop_type]
         if prop_type == 'date':
-            return NotionPropertyHelper._parse_date(prop)
+            return NotionPropertyHelper._date(prop, value)
         elif prop_type == 'multi_select':
             return NotionPropertyHelper._parse_multi_select(prop)
         elif prop_type == 'select':
@@ -70,7 +69,7 @@ class NotionPropertyHelper:
         elif prop_type == 'title':
             return NotionPropertyHelper._title(prop, value)
         elif prop_type == 'rich_text':
-            return NotionPropertyHelper._parse_rich_text(prop)
+            return NotionPropertyHelper._rich_text(prop, value)
         elif prop_type == 'rollup':
             return NotionPropertyHelper._property(prop['rollup'])
         elif prop_type == 'array':
@@ -81,16 +80,24 @@ class NotionPropertyHelper:
         return None
 
     @staticmethod
-    def _parse_date(prop):
-        if not prop['date']:
-            logging.warning(f'No date provided: {prop}')
-            return None
-        start_date = prop['date']['start']
-        if start_date:
-            return datetime.strptime(start_date, DATE_FORMAT)
+    def _date(prop, value=None):
+        if value:
+            prop['date'] = {'start': value}
+            if 'name' in prop:
+                del prop['name']
+            return prop
         else:
-            logging.warning(f'No date provided: {prop}')
-            return None
+            if not prop['date']:
+                logging.warning(f'No date provided: {prop}')
+                return None
+            start_date = prop['date']['start']
+            if start_date and len(start_date) > 10:
+                return datetime.strptime(start_date, DATETIME_FORMAT)
+            elif start_date:
+                return datetime.strptime(start_date, DATE_FORMAT)
+            else:
+                logging.warning(f'No date provided: {prop}')
+                return None
 
     @staticmethod
     def _parse_multi_select(prop):
@@ -134,13 +141,13 @@ class NotionPropertyHelper:
         return NotionPropertyHelper._text(prop, 'title', value)
 
     @staticmethod
-    def _parse_rich_text(prop):
-        return NotionPropertyHelper._text(prop, 'rich_text')
+    def _rich_text(prop, value=None):
+        return NotionPropertyHelper._text(prop, 'rich_text', value)
 
     @staticmethod
     def _text(prop, prop_type, value=None):
         if value:
-            prop['title'] = [{'type': 'text', 'text': {'content': value}}]
+            prop[prop_type] = [{'type': 'text', 'text': {'content': value}}]
             if 'name' in prop:
                 del prop['name']
             return prop
