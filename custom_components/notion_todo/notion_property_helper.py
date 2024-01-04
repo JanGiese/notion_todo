@@ -3,9 +3,7 @@ from datetime import datetime
 import logging
 
 DATE_FORMAT = '%Y-%m-%d'
-DATETIME_FORMAT = DATE_FORMAT + 'T%H:%M:%S.%fZ'
-
-
+DATETIME_FORMAT = DATE_FORMAT + 'T%H:%M:%S.%f%z'
 class NotionPropertyHelper:
     """Helper class to parse Notion properties."""
 
@@ -86,7 +84,9 @@ class NotionPropertyHelper:
             logging.warning(f'No date provided: {prop}')
             return None
         start_date = prop['date']['start']
-        if start_date:
+        if start_date and len(start_date) > 10:
+            return datetime.strptime(start_date, DATETIME_FORMAT)
+        elif start_date:
             return datetime.strptime(start_date, DATE_FORMAT)
         else:
             logging.warning(f'No date provided: {prop}')
