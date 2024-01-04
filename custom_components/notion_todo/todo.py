@@ -106,7 +106,9 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
 
         await self.coordinator.client.update_task(task_id=uid,
                                                   title=item.summary,
-                                                  status=status)
+                                                  status=status,
+                                                  due=item.due,
+                                                  description=item.description)
 
         await self.coordinator.async_refresh()
 
