@@ -78,6 +78,8 @@ class NotionApiClient:
             task_id (str): id of the task
             title: (str): Title of the task
             status (str): Status of the task
+            due (datetime): Due date of the task
+            description (str): Description of the task
         """
         task_data = await self._get_task_template()
         task_data = propHelper.set_property_by_id("title", title, task_data)
