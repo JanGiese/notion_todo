@@ -69,7 +69,7 @@ class NotionPropertyHelper:
         elif prop_type == 'title':
             return NotionPropertyHelper._title(prop, value)
         elif prop_type == 'rich_text':
-            return NotionPropertyHelper._parse_rich_text(prop)
+            return NotionPropertyHelper._rich_text(prop, value)
         elif prop_type == 'rollup':
             return NotionPropertyHelper._property(prop['rollup'])
         elif prop_type == 'array':
@@ -141,13 +141,13 @@ class NotionPropertyHelper:
         return NotionPropertyHelper._text(prop, 'title', value)
 
     @staticmethod
-    def _parse_rich_text(prop):
-        return NotionPropertyHelper._text(prop, 'rich_text')
+    def _rich_text(prop, value=None):
+        return NotionPropertyHelper._text(prop, 'rich_text', value)
 
     @staticmethod
     def _text(prop, prop_type, value=None):
         if value:
-            prop['title'] = [{'type': 'text', 'text': {'content': value}}]
+            prop[prop_type] = [{'type': 'text', 'text': {'content': value}}]
             if 'name' in prop:
                 del prop['name']
             return prop

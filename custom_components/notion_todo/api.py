@@ -83,8 +83,7 @@ class NotionApiClient:
         task_data = propHelper.set_property_by_id("title", title, task_data)
         task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
         task_data = propHelper.set_property_by_id(TASK_DATE_PROPERTY, due, task_data)
-        #TODO
-        #task_data = propHelper.set_property_by_id(TASK_DESCRIPTION_PROPERTY, description, task_data)
+        task_data = propHelper.set_property_by_id(TASK_DESCRIPTION_PROPERTY, description, task_data)
         update_properties = task_data['properties']
         return await self._api_wrapper(
             method="patch",
@@ -137,8 +136,7 @@ class NotionApiClient:
         if not self._task_template:
             database = await self._get_database()
             properties = database['properties']
-            # TODO
-            propHelper.del_properties_except(["title", TASK_STATUS_PROPERTY, TASK_DATE_PROPERTY], properties)
+            propHelper.del_properties_except(["title", TASK_STATUS_PROPERTY, TASK_DATE_PROPERTY, TASK_DESCRIPTION_PROPERTY], properties)
             self._task_template = {
                 'parent': {'database_id': self._database_id},
                 'properties': properties
