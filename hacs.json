@@ -2,7 +2,7 @@
     "name": "Notion ToDo",
     "filename": "notion_todo.zip",
     "hide_default_branch": true,
-    "homeassistant": "2024.1.1",
+    "homeassistant": "2024.1.0",
     "render_readme": true,
     "zip_release": true
 }
