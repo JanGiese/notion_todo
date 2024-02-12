@@ -18,7 +18,7 @@ Platform | Description
 
 ## Prerequisites
 - You need to have a notion account and a notion integration token. You can get one by following the instructions [here](https://developers.notion.com/docs/getting-started).
-- You need to create a database from the Notion´s official ToDo template. You can find it [here](https://www.notion.so/Notion-To-Do-List-Template-0b2e2d8980b74c5e8e8c1e6c0f8b4b4e).
+- You need to create a database from the Notion´s official ToDo template. You can find it [here]((https://www.notion.so/4b5de264413546a384e1dadb6c4ce2cf?duplicate=true&from=notion_template_gallery)).
 - You need to share the database with the integration token you created before.
 
 ## Installation
