@@ -18,7 +18,7 @@ jobs:
         - name: Test with pytest
           run: |
             pip install pytest pytest-cov
-            pytest custom_components/notion_todo/tests --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+            pytest ./test*.py
             env:
                 NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
                 NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
