@@ -16,6 +16,8 @@ class NotionPropertyHelper:
     @staticmethod
     def set_property_by_id(id, value, data):
         """Set property by id."""
+        if not value:
+            return NotionPropertyHelper.del_property_by_id(id, data)
         key = NotionPropertyHelper._get_property_key_by_id(id, data)
         if key:
             data['properties'][key] = NotionPropertyHelper._property(data['properties'][key], value)
