@@ -106,6 +106,7 @@ class NotionApiClient:
         """
         task_template = await self._get_task_template()
         task_data = task_template.copy()
+        task_data["properties"] = propHelper.del_properties_except(["title", TASK_STATUS_PROPERTY], task_data["properties"])
         task_data = propHelper.set_property_by_id("title", title, task_data)
         task_data = propHelper.set_property_by_id(TASK_STATUS_PROPERTY, status, task_data)
 
